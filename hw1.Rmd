@@ -1,5 +1,5 @@
 ---
-title: "SOC542 Homework 1: Statistics Review and OLS Regression with Two Variables"
+title: "SOC542 Homework 1: Statistics Review and Bivariate OLS Regression"
 author: "Your name here"
 output:
   html_document: default
@@ -9,6 +9,7 @@ output:
 ```{r setup, include=FALSE}
 # This cell is here to set some options for how the output should be rendered.
 # Do not edit anything here
+
 # The following lines define how the output of code chunks should behave
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(include = TRUE)
@@ -18,7 +19,7 @@ knitr::opts_chunk$set(message = FALSE)
 # Packages
 library(tidyverse)
 library(knitr)
-library(stargazer)
+library(modelsummary)
 
 set.seed(08901) # Setting seed for random number generator
 ```
@@ -30,7 +31,6 @@ You should be viewing this document in RStudio. If you have not done so already,
 This assignment will cover the material from the first two class meetings. In addition, it will be an opportunity to further familiarize yourself with R, RStudio, and RMarkdown.
 
 **Please begin by adding your name to the top of the document on line 3.** Instructions for how to submit the assignment are provided at the bottom on the document.
-
 
 ## Using RMarkdown
 This RMarkdown document contains a mixture of text (formatted using [Markdown](https://www.markdownguide.org/cheat-sheet/) conventions) and R code "chunks". Each chunk begins with a set of braces containing important information. For example, the chunk below is prefaced with ``{r preliminaries, include=FALSE}``. First, the `r` signifies that the chunk should be run using R. Second, ``preliminaries`` is the name of the chunk. This is followed by a set of options, separated by commas. In this case ``include=FALSE`` means that this code chunk will not be shown in any output. If we set it to ``TRUE`` then the chunk would be printed in any output.
@@ -46,16 +46,17 @@ You can execute the code in a chunk by clicking the green arrow in the top right
 ``Alt + Shift + K`` or ``Option + Shift + K``, depending upon your computer, will open up a menu showing all keyboard shortcuts available in RStudio.
 
 ## A note on notation
-The dollar symbol is used to indicate mathematical notation written in [LaTeX](https://www.latex-project.org/about/), a typesetting language used for scientific documents. It is a particularly useful way for rendering mathematical notation. For example, $\frac{1}{2}$. I do not expect you to learn to use LaTeX for this course, but I expect you will find it useful and encourage you to use it in your documents. If you hover your mouse between the dollar signs you can see how the LaTeX code will render in the final output. Longer expressions can be rendered on a new line by adding two dollar signs either side. For example,
+The dollar symbol is used to indicate mathematical notation written in [LaTeX](https://www.latex-project.org/about/), a typesetting language used for scientific documents. It is a particularly useful way for rendering mathematical notation. For example, $\frac{1}{2}$. I do not expect you to learn to use LaTeX for this course. If you hover your mouse between the dollar signs you can see how the LaTeX code will render in the final output. Longer expressions can be rendered on a new line by adding two dollar signs either side. For example,
 
 $$\frac{1}{n-1}\sum_{i=1}^k(x_i-\bar{x})^2$$
 
-The backtick symbol  is used to indicate a specific object or function in R, for example `rnorm` refers to a function. When you render this document at the end of the assignment you will see how this syntax modifies the output.
+The backtick symbol indicates a specific object or function in R, for example `rnorm` refers to a function. When you render this document at the end of the assignment you will see how this syntax modifies the output.
 
 #  Questions
 Please answer each of the following questions. Note that some questions require both code and written answers (search for `Answer` at the end to make sure you have not missed any written questions).
 
 Q1. For each of the following chunk options, explain what they do in one sentence (refer to the documentation on line 42):
+
     a. echo: Your answers here
     b. warning:
     c. message:
@@ -64,22 +65,17 @@ Q1. For each of the following chunk options, explain what they do in one sentenc
     
 Q2. Use the "Insert a new code chunk" button to insert a new chunk below this line. Add the same option as the previous chunk. Once you have created the chunk, create a random variable $x$ consisting of 100 draws from a standard normal distribution. Name the variable `x` using the assignment operator.
 
-Your chunk goes here (delete this line)
+Your chunk goes here (delete this line after inserting)
 
-Q3. The summation operator, represented by capital sigma, indicates a sum over a set of values. We can calculate a sum by using a for-loop. The variable `s` will be used to store the sum of `x`. Complete the body of the for-loop to add each value of `x` to `s`. I have used the notation `x_i` to refer to each element of `x` to show consistency with the LaTeX notation $x_i$.
-
-Hint: The running total must be maintained as you loop over the values. Sometimes it can be helpful to `print` what is happening at each iteration, but please make sure to remove any print statements from the output.
+Q3. The summation operator, represented by capital sigma, indicates a sum over a set of values. Use R to calculate the sum of `x` and store it as an object called `s`. Print the result using `print`.
 
 *Note: The `#` symbol is used to comment within code chunks. Anything on the same line as this symbol will not run. It is used to indicate where you should add to the chunks below. Please remove this before proceeding.*
 ```{r q3, echo=TRUE, tidy=TRUE}
-s <- 0
-for (x_i in x) {
-    s <- # Your answer here
-}
+# Your answer here
 ```
 
 
-Q4. In the chunk below, calculate the sample of `x` by using the sum `s` defined above. Use the assignment operator to store the mean value. Use print to see the mean value. Next, run the line of code at the bottom on the chunk to verify that your answer is correct.
+Q4. In the chunk below, calculate the sample mean of `x` by using the sum `s` defined above. Use the assignment operator to store the mean value with a name of your choice. Compare your results to the result of the `mean` function to verify that your answer is correct.
 ```{r q4, echo=TRUE, tidy=TRUE}
 # Your answer here
 mean(x) # Run this line to verify your answer
@@ -88,17 +84,10 @@ mean(x) # Run this line to verify your answer
 In one sentence, discuss the observed sample mean and how it relates to the population quantity.
 Answer: 
 
-Q5. Let's use the mean to calculate the sample variance. We're going to do this using another for-loop. The loop should take each value of `x` and store the squared difference between `x_i` and $\bar{x}$ in the vector `diffs`. *The sum is not computed within the loop*. In this case, a running counter is used for indexing. This allows you to loop over the elements of `x` while also maintaining some information about the position in the vector.
+Q5. Let's use the mean to calculate the sample variance. Use the mean calculated in the previous step to do this. Recall the variance is the sum of the squared differences between each element and the mean.
 
-Once the loop has been completed, use the squared differences to calculate the sample variance of $x$. Verify that your answer is correct by comparing to the built-in `var` function.
+Verify that your answer is correct by comparing to the built-in `var` function.
 ```{r q5, echo=TRUE, tidy=TRUE}
-diffs <- c() # empty vector to store squared differences
-i <- 1
-for (x_i in x) {
-    diffs[i] <- # Your code here
-    i <- i + 1
-}
-
 # Calculate variance here
 var.x <- #
 print(var.x) # verify your answer matches the one produced by the line below
@@ -114,7 +103,7 @@ sd(x) # Use the sd function to verify your answer is correct
 Why is the standard deviation often a more useful summary of a random variable than the variance?
 Answer: 
 
-Q7. Much of statistics is predicated on the concept of a sampling distribution. The idea is that sample statistics are drawn from an underlying distribution. Use the `replicate` function to generate 1000 sample means from a normal distribution with a mean of 10 and standard deviation of 2. Use the results to calculate the mean of the sampling distribution and its standard deviation (recall that the standard error is equivalent to the standard deviation of the sampling distribution.)
+Q7. The concept of the sampling distribution is central to frequentist statistics. The idea is that sample statistics are drawn from an underlying distribution. Use the `replicate` function to generate 1000 sample means from a normal distribution with a mean of 10 and standard deviation of 2. Use the results to calculate the mean of the sampling distribution and its standard deviation (recall that the standard error is equivalent to the standard deviation of the sampling distribution.)
 ```{r q7, echo=TRUE, tidy=TRUE}
 means <- replicate() # Complete the replicate function
 mean.SD <- # Your code here
@@ -124,7 +113,7 @@ SE <- # Your code here
 Q8. Use `ggplot` to create a simple histogram showing the sampling distribution created above. You will have to convert the vector of mean from Q7 into a `data.frame`. 
 Add a vertical line to the plot showing the mean of the sampling distribution. 
 
-Hint: It might help by building the plot incrementally. Make a histogram then try to add the line. The plus signs are included to show you how to organize the code but you may need to comment some of them out for intermediate testing.
+*Hint: It might help by building the plot incrementally. Make a histogram then try to add the line. The plus signs are included to show you how to organize the code but you may need to comment some of them out for intermediate testing.*
 
 Finally, answer the question below.
 ```{r q8, echo=TRUE, tidy=TRUE}
@@ -136,12 +125,13 @@ Explain how this finding is related to the Central Limit Theorem.
 Answer: 
 
 
-Q9. We can use R to define functions to perform certain tasks. The following chunk contains two simple functions. The first returns the standard error of a given sample. The second use computs confidence intervals around a mean based on a chosen significance level. Observe how the `std.error` function is used by `conf.int`.
+Q9. We can use R to define functions to perform certain tasks. The following chunk contains two simple functions. The first returns the standard error of a given sample. The second use computes confidence intervals around a mean based on a chosen significance level. Observe how the `std.error` function is used by `conf.int`.
 
 Use the `replicate` function to draw 100 observations from the population defined in Q7 and to calculate a confidence interval for each replication. The line of code below is used to convert the results into a data.frame. 
 
 Use this data.frame to calculate how many confidence intervals *do not* contain the population mean. Hint: The mean is not contained in the interval if the lower bound is greater than the mean or the upper bound is less than the mean. Finally, answer the question below.
 ```{r q9, echo=TRUE, tidy=TRUE}
+# Functions have been defined for you, do not edit.
 std.error <- function(x) {
     return(sd(x)/sqrt(length(x)))
 }
@@ -152,13 +142,16 @@ conf.int <- function(x, t=1.96) {
 }
 
 reps <- replicate() # Complete the replicate function
-CIs <- as.data.frame(t(reps)) # Converts the results to a data.frame
-#head(CIs) # Uncomment and run this to see how cis is structured
-# Your calculation here (use the CIs object)
-```
-What proportion of the confidence intervals calculated should we expect to contain the true population mean $\mu$? What would you expect to see if we modified the confidence interval to use a *larger* value of `t`?
+CIs <- as.data.frame(t(reps)) # Converts the results to a data.frame, do not edit.
+head(CIs) # Running this will show you how the CIs object is structuted
 
-Q10. The code in the chunk below is used to create two variables, similar to the example in section 6.2 of GHV. In this case, `y` is a function of `x`, along with some noise drawn from a normal distribution. Note that running this chunk will override the variable `x` created above.
+# How many CIs contain zero? Hint: Use `filter` to find the relevant subset of rows in CIs
+```
+What proportion of the confidence intervals calculated should we expect to contain the true population mean $\mu$? 
+
+What would you expect to see if we modified the confidence interval to use `t` = 2.58? Why?
+
+Q10. The code in the chunk below is used to create two variables, similar to the example in section 6.2 of GHV. In this case, `y` is a function of `x`, along with some noise drawn from a normal distribution. *Note that running this chunk will override the variable `x` created above.*
 
 Create a `ggplot` to show the relationship between the two variables. Include the regression line and each of the points. Answer the question below.
 ```{r q10, echo=TRUE, tidy=TRUE}
@@ -175,7 +168,7 @@ ggplot() + # Complete the ggplot function and add additional geom elements
 What does the plot tell us about the relationship between the two variables?
 Answer:
 
-Q11. Use a linear model (`lm`) to estimate the relationship between `x` and `y` then print the summary output using `stargazer`. Next, answer the questions below.
+Q11. Use a linear model (`lm`) to estimate the relationship between `x` and `y` then present the output using `modelsummary`. Next, answer the questions below.
 
 ```{r q11, echo=TRUE, tidy=TRUE}
 # Your code here
@@ -216,7 +209,7 @@ data <- elections %>%
     drop_na()
 ```
 
-Using these data, estimate a linear model to predict how mask use varies by Trump support. You may use any one of the survey questions or combine them (e.g.`low_mask_wearing = NEVER + RARELY`). Store the model as an object called `results` then create a summary table using `stargazer`.   Answer the question below.
+Using these data, estimate a linear model to predict how mask use varies by Trump support. You may use any one of the survey questions or combine them (e.g.`low_mask_wearing = NEVER + RARELY`). Store the model as an object called `results` then create a summary table using `modelsummary`.   Answer the question below.
 ```{r q13, echo=TRUE, tidy=TRUE}
 # Your code here
 ```
@@ -226,20 +219,11 @@ Answer:
 Is the observed relationship statistically significant?
 Answer:
 
-Can you think of a sociological explanation for this finding? Write a short paragraph. You can ground your answer in any relevant theories or just write something more general.
+Can you think of an explanation for this finding? Write a short paragraph. You can ground your answer in any relevant theories or just write something more general.
 Answer: 
 
 Are there any problems with the model or data that should be taken into account? Write a short paragraph considering the limitations of the current model.
 Answer:
-
-
-# Optional extra credit
-The dataset used above contains information on many different states. Estimate a separate regression for each state and store the estimated $\beta_1$ coefficients and any other relevant information. You might find it helpful to do this by looking over each state in `unique(data$state)` Do not show the entire regression output for each model! 
-
-Use the results from the regression analysis. to plot the relationship between Trump vote share and mask use within each state (you may plot this however you want). Below, write a short paragraph describing the results and how stable the national level pattern is when analyzed within existing states.
-```{r extra credit, echo=TRUE, tidy=TRUE}
-# Your code here
-```
 
 # Submission instructions
 Once you have finished the assignment please complete the following steps to submit it:
